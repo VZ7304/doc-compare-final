@@ -657,7 +657,6 @@ if (bestMatch) {
   const importantConflict = hasImportantTokenConflict(baseItem.itemName, bestMatch.itemName);
   const contextUnitEquivalent = shouldIgnoreUnitDifference(baseItem, bestMatch);
   const strongName = itemNameSimilarity >= 0.88;
-  const primaryCodeLabel = basePrimaryCode || otherPrimaryCode || '';
 
   if (matchData?.item && highestScore >= 0.75) {
     if (codeCompatible && strongName && !importantConflict && contextUnitEquivalent) {
