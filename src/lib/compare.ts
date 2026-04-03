@@ -31,17 +31,34 @@ function normalizeUnitSmart(value: string | null | undefined): string {
   let text = stripVietnameseAccents(raw).toLowerCase().trim();
   text = text.replace(/[\s\.]+/g, ' ');
   text = text.replace(/[^a-z0-9 ]+/g, '');
-  const normalized = text.replace(/\s+/g, ' ').trim();
+  let normalized = text.replace(/\s+/g, ' ').trim();
+
+  // Sửa các lỗi OCR rất hay gặp ở đơn vị tính
+  if (normalized === 'l0') normalized = 'lo';
+  if (normalized === 'h0p') normalized = 'hop';
+  if (normalized === 'ca1') normalized = 'cai';
+  if (normalized === 'v1') normalized = 'vi';
+
   const unitMap: Record<string, string> = {
-    cai: 'cai', cái: 'cai', caí: 'cai',
-    bo: 'bo', bộ: 'bo',
-    lo: 'lo', lọ: 'lo',
-    hop: 'hop', hộp: 'hop',
-    vien: 'vien', viên: 'vien',
-    tap: 'tap', tập: 'tap',
-    tui: 'tui', túi: 'tui',
-    vi: 'vi', vỉ: 'vi'
+    cai: 'cai',
+    chiec: 'cai',
+    cay: 'cai',
+
+    bo: 'bo',
+
+    lo: 'lo',
+
+    hop: 'hop',
+
+    vien: 'vien',
+
+    tap: 'tap',
+
+    tui: 'tui',
+
+    vi: 'vi'
   };
+
   return unitMap[normalized] ?? normalized;
 }
 
@@ -614,16 +631,24 @@ if (exactPrimaryCodeMatch) {
         const assigned = allAssignments[i][other.fileName];
         const matchData = assigned[rowIdx];
         
-        const bestMatch = matchData?.item;
-        const highestScore = matchData?.score || 0;
-        
-        // Show suggestions only on the last duplicated row for this base item
-        const suggestions = (rowIdx === maxRowsForThisBaseItem - 1) ? allSuggestions[i][other.fileName] : [];
+       let bestMatch = matchData?.item;
+let highestScore = matchData?.score || 0;
 
-        let status: MatchStatus = 'MISSING';
-        const discrepancies: string[] = [];
+// Show suggestions only on the last duplicated row for this base item
+const suggestions = (rowIdx === maxRowsForThisBaseItem - 1) ? allSuggestions[i][other.fileName] : [];
 
-        if (bestMatch && highestScore >= 0.75) {
+const topSuggestion = suggestions[0];
+const suggestionFallback = !bestMatch && !!topSuggestion && topSuggestion.score >= 0.6;
+
+if (suggestionFallback && topSuggestion) {
+  bestMatch = topSuggestion.item;
+  highestScore = topSuggestion.score;
+}
+
+let status: MatchStatus = 'MISSING';
+const discrepancies: string[] = [];
+
+if (matchData?.item && highestScore >= 0.75) {
           const basePrimaryCode = getPrimaryProductCode(baseItem);
           const otherPrimaryCode = getPrimaryProductCode(bestMatch);
           const itemCodeSimilarity = calculateCodeSimilarity(baseItem.itemCode, bestMatch.itemCode);
@@ -642,6 +667,10 @@ if (exactPrimaryCodeMatch) {
             status = 'UNCERTAIN';
             discrepancies.push(`Tên/Mã mặt hàng khớp một phần (Độ tương đồng tổng hợp: ${Math.round(highestScore * 100)}%)`);
           }
+  else if (suggestionFallback && bestMatch) {
+  status = 'UNCERTAIN';
+  discrepancies.push(`Có ứng viên gần đúng ${Math.round(highestScore * 100)}%, không nên xem là thiếu hẳn`);
+}
 
           if (activeCompareFields.includes('itemCode') && !codeCompatible) {
             if (basePrimaryCode && otherPrimaryCode) {
