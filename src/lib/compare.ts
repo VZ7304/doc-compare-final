@@ -672,42 +672,42 @@ if (bestMatch) {
     status = 'UNCERTAIN';
     discrepancies.push(`Có ứng viên gần đúng ${Math.round(highestScore * 100)}%, không nên xem là thiếu hẳn`);
   }
+
+  if (activeCompareFields.includes('itemCode') && !codeCompatible) {
+    if (basePrimaryCode && otherPrimaryCode) {
+      status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
+      discrepancies.push(`Mã mặt hàng khác: Gốc (${basePrimaryCode}) vs Đối chiếu (${otherPrimaryCode})`);
+    } else if (itemCodeSimilarity < 0.6 && itemNameSimilarity < 0.85) {
+      status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
+      discrepancies.push(`Mã hàng lệch: Gốc (${baseItem.itemCode}) vs Đối chiếu (${bestMatch.itemCode})`);
+    }
+  }
+
+  if (activeCompareFields.includes('itemName') && itemNameSimilarity < 0.75 && !codeCompatible) {
+    status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
+    discrepancies.push(`Tên hàng lệch: Gốc (${baseItem.itemName}) vs Đối chiếu (${bestMatch.itemName})`);
+  }
+
+  if (activeCompareFields.includes('unit') && !shouldIgnoreUnitDifference(baseItem, bestMatch)) {
+    status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
+    discrepancies.push(`Đơn vị tính lệch: Gốc (${baseItem.unit ?? 'Trống'}) vs Đối chiếu (${bestMatch.unit ?? 'Trống'})`);
+  }
+
+  if (activeCompareFields.includes('quantity') && isFieldDifferent('quantity', baseItem, bestMatch)) {
+    status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
+    discrepancies.push(`Số lượng lệch: Gốc (${baseItem.quantity ?? 'Trống'}) vs Đối chiếu (${bestMatch.quantity ?? 'Trống'})`);
+  }
+
+  if (activeCompareFields.includes('unitPrice') && isFieldDifferent('unitPrice', baseItem, bestMatch)) {
+    status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
+    discrepancies.push(`Đơn giá lệch: Gốc (${baseItem.unitPrice ?? 'Trống'}) vs Đối chiếu (${bestMatch.unitPrice ?? 'Trống'})`);
+  }
+
+  if (activeCompareFields.includes('totalPrice') && isFieldDifferent('totalPrice', baseItem, bestMatch)) {
+    status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
+    discrepancies.push(`Thành tiền lệch: Gốc (${baseItem.totalPrice ?? 'Trống'}) vs Đối chiếu (${bestMatch.totalPrice ?? 'Trống'})`);
+  }
 }
-          if (activeCompareFields.includes('itemCode') && !codeCompatible) {
-            if (basePrimaryCode && otherPrimaryCode) {
-              status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
-              discrepancies.push(`Mã mặt hàng khác: Gốc (${basePrimaryCode}) vs Đối chiếu (${otherPrimaryCode})`);
-            } else if (itemCodeSimilarity < 0.6 && itemNameSimilarity < 0.85) {
-              status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
-              discrepancies.push(`Mã hàng lệch: Gốc (${baseItem.itemCode}) vs Đối chiếu (${bestMatch.itemCode})`);
-            }
-          }
-
-          if (activeCompareFields.includes('itemName') && itemNameSimilarity < 0.75 && !codeCompatible) {
-            status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
-            discrepancies.push(`Tên hàng lệch: Gốc (${baseItem.itemName}) vs Đối chiếu (${bestMatch.itemName})`);
-          }
-
-          if (activeCompareFields.includes('unit') && !shouldIgnoreUnitDifference(baseItem, bestMatch)) {
-            status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
-            discrepancies.push(`Đơn vị tính lệch: Gốc (${baseItem.unit ?? 'Trống'}) vs Đối chiếu (${bestMatch.unit ?? 'Trống'})`);
-          }
-
-          if (activeCompareFields.includes('quantity') && isFieldDifferent('quantity', baseItem, bestMatch)) {
-            status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
-            discrepancies.push(`Số lượng lệch: Gốc (${baseItem.quantity ?? 'Trống'}) vs Đối chiếu (${bestMatch.quantity ?? 'Trống'})`);
-          }
-
-          if (activeCompareFields.includes('unitPrice') && isFieldDifferent('unitPrice', baseItem, bestMatch)) {
-            status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
-            discrepancies.push(`Đơn giá lệch: Gốc (${baseItem.unitPrice ?? 'Trống'}) vs Đối chiếu (${bestMatch.unitPrice ?? 'Trống'})`);
-          }
-
-          if (activeCompareFields.includes('totalPrice') && isFieldDifferent('totalPrice', baseItem, bestMatch)) {
-            status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
-            discrepancies.push(`Thành tiền lệch: Gốc (${baseItem.totalPrice ?? 'Trống'}) vs Đối chiếu (${bestMatch.totalPrice ?? 'Trống'})`);
-          }
-        }
 
         comparisons[other.fileName] = {
           status,
