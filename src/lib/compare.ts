@@ -530,13 +530,24 @@ export async function generateReport(
           codeScore = rawCodeScore * 0.2;
         }
 
-        let finalScore = (nameScore * 0.86) + (codeScore * 0.14);
+       let finalScore = (nameScore * 0.86) + (codeScore * 0.14);
 
-        if (primaryCodeScore >= 0.95 && nameScore >= 0.78) {
-          finalScore = Math.max(finalScore, 0.92);
-        } else if (primaryCodeScore >= 0.9 && nameScore >= 0.85) {
-          finalScore = Math.max(finalScore, 0.9);
-        }
+const exactPrimaryCodeMatch =
+  !!basePrimaryCode &&
+  !!otherPrimaryCode &&
+  normalizeCodeText(basePrimaryCode) === normalizeCodeText(otherPrimaryCode);
+
+const codeCompatibleNow = areProductCodesCompatible(baseItem, otherItem);
+
+if (exactPrimaryCodeMatch) {
+  finalScore = Math.max(finalScore, nameScore >= 0.55 ? 0.96 : 0.92);
+} else if (codeCompatibleNow && nameScore >= 0.55) {
+  finalScore = Math.max(finalScore, 0.9);
+} else if (primaryCodeScore >= 0.95 && nameScore >= 0.78) {
+  finalScore = Math.max(finalScore, 0.92);
+} else if (primaryCodeScore >= 0.9 && nameScore >= 0.85) {
+  finalScore = Math.max(finalScore, 0.9);
+}
 
         if (hasImportantTokenConflict(baseItem.itemName, otherItem.itemName)) {
           finalScore = Math.min(finalScore, 0.65);
