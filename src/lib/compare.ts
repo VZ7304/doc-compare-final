@@ -722,8 +722,6 @@ if (bestMatch) {
         comparisons
       });
     }
-  }
-
   // Ensure the final results list is strictly sorted by the extraction order (originalIndex)
   results.sort((a, b) => (a.baseItem.originalIndex || 0) - (b.baseItem.originalIndex || 0));
 
