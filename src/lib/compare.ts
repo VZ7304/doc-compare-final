@@ -256,24 +256,41 @@ function isStickyNoteProduct(value: string | null | undefined): boolean {
   return /giay nho|sticky|memo note|memo notes|note pad|giay ghi chu|block giay|block giay nho|giay note|giay ghi chu/.test(normalized);
 }
 
-function hasImportantTokenConflict(a: string, b: string): boolean {
+function getImportantTokenCategories(text: string): Record<string, Set<string>> {
   const normalized = normalizeProductNameSmart(text);
+
   const categories: Record<string, Set<string>> = {
     thickness: new Set<string>(),
-    size: new Set<string>(),
+    paperSize: new Set<string>(),
+    spineSize: new Set<string>(),
+    numberSize: new Set<string>(),
     grade: new Set<string>(),
   };
 
   const thicknessMatches = normalized.match(/\b(?:0\.35|0,35|0\.5|0,5|0\.7|0,7|1\.0|1,0)\b/g);
   thicknessMatches?.forEach(v => categories.thickness.add(v.replace(',', '.')));
 
-  const sizeMatches = normalized.match(/\b(?:a4|a5|no10|no12|\d+cm)\b/g);
-  sizeMatches?.forEach(v => categories.size.add(v));
+  const paperSizeMatches = normalized.match(/\b(?:a3|a4|a5)\b/g);
+  paperSizeMatches?.forEach(v => categories.paperSize.add(v));
+
+  const spineSizeMatches = normalized.match(/\b\d+cm\b/g);
+  spineSizeMatches?.forEach(v => categories.spineSize.add(v));
+
+  const numberSizeMatches = normalized.match(/\b(?:no10|no12)\b/g);
+  numberSizeMatches?.forEach(v => categories.numberSize.add(v));
 
   const gradeMatches = normalized.match(/\b(?:r1|r3)\b/g);
   gradeMatches?.forEach(v => categories.grade.add(v));
 
   return categories;
+}
+
+function areSetsExactlyEqual(a: Set<string>, b: Set<string>): boolean {
+  if (a.size !== b.size) return false;
+  for (const value of a) {
+    if (!b.has(value)) return false;
+  }
+  return true;
 }
 
 function hasImportantTokenConflict(a: string, b: string): boolean {
@@ -283,12 +300,16 @@ function hasImportantTokenConflict(a: string, b: string): boolean {
   for (const category of Object.keys(categoriesA) as Array<keyof typeof categoriesA>) {
     const valuesA = categoriesA[category];
     const valuesB = categoriesB[category];
+
     if (valuesA.size === 0 || valuesB.size === 0) continue;
-    const union = new Set([...valuesA, ...valuesB]);
-    if (union.size > 1) return true;
+
+    if (!areSetsExactlyEqual(valuesA, valuesB)) {
+      return true;
+    }
   }
 
   return false;
+}
 }
 
 function calculateNameSimilarity(a: string, b: string): number {
