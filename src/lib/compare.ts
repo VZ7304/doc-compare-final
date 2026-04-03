@@ -310,7 +310,6 @@ function hasImportantTokenConflict(a: string, b: string): boolean {
 
   return false;
 }
-}
 
 function calculateNameSimilarity(a: string, b: string): number {
   const rawA = normalizeProductNameSmart(a);
