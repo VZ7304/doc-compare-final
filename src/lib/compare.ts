@@ -648,30 +648,31 @@ if (suggestionFallback && topSuggestion) {
 let status: MatchStatus = 'MISSING';
 const discrepancies: string[] = [];
 
-if (matchData?.item && highestScore >= 0.75) {
-          const basePrimaryCode = getPrimaryProductCode(baseItem);
-          const otherPrimaryCode = getPrimaryProductCode(bestMatch);
-          const itemCodeSimilarity = calculateCodeSimilarity(baseItem.itemCode, bestMatch.itemCode);
-          const itemNameSimilarity = calculateNameSimilarity(baseItem.itemName, bestMatch.itemName);
-          const codeCompatible = areProductCodesCompatible(baseItem, bestMatch);
-          const importantConflict = hasImportantTokenConflict(baseItem.itemName, bestMatch.itemName);
-          const contextUnitEquivalent = shouldIgnoreUnitDifference(baseItem, bestMatch);
-          const strongName = itemNameSimilarity >= 0.88;
-          const primaryCodeLabel = basePrimaryCode || otherPrimaryCode || '';
+if (bestMatch) {
+  const basePrimaryCode = getPrimaryProductCode(baseItem);
+  const otherPrimaryCode = getPrimaryProductCode(bestMatch);
+  const itemCodeSimilarity = calculateCodeSimilarity(baseItem.itemCode, bestMatch.itemCode);
+  const itemNameSimilarity = calculateNameSimilarity(baseItem.itemName, bestMatch.itemName);
+  const codeCompatible = areProductCodesCompatible(baseItem, bestMatch);
+  const importantConflict = hasImportantTokenConflict(baseItem.itemName, bestMatch.itemName);
+  const contextUnitEquivalent = shouldIgnoreUnitDifference(baseItem, bestMatch);
+  const strongName = itemNameSimilarity >= 0.88;
+  const primaryCodeLabel = basePrimaryCode || otherPrimaryCode || '';
 
-          if (codeCompatible && strongName && !importantConflict && contextUnitEquivalent) {
-            status = 'MATCH';
-          } else if (highestScore >= 0.88 && !importantConflict && contextUnitEquivalent) {
-            status = 'MATCH';
-          } else {
-            status = 'UNCERTAIN';
-            discrepancies.push(`Tên/Mã mặt hàng khớp một phần (Độ tương đồng tổng hợp: ${Math.round(highestScore * 100)}%)`);
-          }
-  else if (suggestionFallback && bestMatch) {
-  status = 'UNCERTAIN';
-  discrepancies.push(`Có ứng viên gần đúng ${Math.round(highestScore * 100)}%, không nên xem là thiếu hẳn`);
+  if (matchData?.item && highestScore >= 0.75) {
+    if (codeCompatible && strongName && !importantConflict && contextUnitEquivalent) {
+      status = 'MATCH';
+    } else if (highestScore >= 0.88 && !importantConflict && contextUnitEquivalent) {
+      status = 'MATCH';
+    } else {
+      status = 'UNCERTAIN';
+      discrepancies.push(`Tên/Mã mặt hàng khớp một phần (Độ tương đồng tổng hợp: ${Math.round(highestScore * 100)}%)`);
+    }
+  } else if (suggestionFallback) {
+    status = 'UNCERTAIN';
+    discrepancies.push(`Có ứng viên gần đúng ${Math.round(highestScore * 100)}%, không nên xem là thiếu hẳn`);
+  }
 }
-
           if (activeCompareFields.includes('itemCode') && !codeCompatible) {
             if (basePrimaryCode && otherPrimaryCode) {
               status = status === 'UNCERTAIN' ? 'UNCERTAIN' : 'MISMATCH';
