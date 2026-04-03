@@ -256,7 +256,7 @@ function isStickyNoteProduct(value: string | null | undefined): boolean {
   return /giay nho|sticky|memo note|memo notes|note pad|giay ghi chu|block giay|block giay nho|giay note|giay ghi chu/.test(normalized);
 }
 
-function getImportantTokenCategories(text: string): Record<string, Set<string>> {
+function hasImportantTokenConflict(a: string, b: string): boolean {
   const normalized = normalizeProductNameSmart(text);
   const categories: Record<string, Set<string>> = {
     thickness: new Set<string>(),
